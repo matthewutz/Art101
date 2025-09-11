@@ -1,0 +1,933 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Zoo</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 25%, #f093fb 50%, #f5576c 75%, #4facfe 100%);
+            background-size: 400% 400%;
+            animation: gradientShift 15s ease infinite;
+            height: 100vh;
+            overflow: hidden;
+            position: relative;
+        }
+
+        @keyframes gradientShift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .sky {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 40%;
+            background: linear-gradient(135deg, #74b9ff 0%, #0984e3 50%, #6c5ce7 100%);
+            box-shadow: inset 0 -20px 40px rgba(0,0,0,0.1);
+        }
+
+        .clouds {
+            position: absolute;
+            top: 20px;
+            width: 100%;
+            height: 100px;
+        }
+
+        .cloud {
+            position: absolute;
+            background: white;
+            border-radius: 50px;
+            opacity: 0.8;
+            animation: float 20s infinite linear;
+        }
+
+        .cloud:before {
+            content: '';
+            position: absolute;
+            background: white;
+            border-radius: 50px;
+        }
+
+        .cloud:after {
+            content: '';
+            position: absolute;
+            background: white;
+            border-radius: 50px;
+        }
+
+        .cloud1 {
+            width: 80px;
+            height: 40px;
+            top: 20px;
+            left: -100px;
+            animation-delay: 0s;
+        }
+
+        .cloud1:before {
+            width: 50px;
+            height: 50px;
+            top: -25px;
+            left: 10px;
+        }
+
+        .cloud1:after {
+            width: 60px;
+            height: 40px;
+            top: -15px;
+            right: 10px;
+        }
+
+        .cloud2 {
+            width: 100px;
+            height: 50px;
+            top: 40px;
+            left: -120px;
+            animation-delay: -8s;
+        }
+
+        .cloud2:before {
+            width: 60px;
+            height: 60px;
+            top: -30px;
+            left: 15px;
+        }
+
+        .cloud2:after {
+            width: 70px;
+            height: 50px;
+            top: -20px;
+            right: 15px;
+        }
+
+        .grass-field {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 60%;
+            background: linear-gradient(135deg, #00b894 0%, #00a085 50%, #00cec9 100%);
+            box-shadow: inset 0 20px 40px rgba(0,0,0,0.2);
+            overflow: hidden;
+        }
+
+        .grass-blades {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+
+        .grass-blade {
+            position: absolute;
+            bottom: 0;
+            width: 3px;
+            background: linear-gradient(to top, #00a085, #00cec9, #55efc4);
+            border-radius: 2px;
+            animation: sway 3s ease-in-out infinite;
+            box-shadow: 0 0 3px rgba(0,255,255,0.3);
+        }
+
+        .grass-blade:nth-child(odd) {
+            animation-delay: -1s;
+        }
+
+        .grass-blade:nth-child(3n) {
+            animation-delay: -2s;
+        }
+
+        .animals-container {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 60%;
+            z-index: 10;
+        }
+
+        .animal {
+            position: absolute;
+            font-size: 3em;
+            cursor: pointer;
+            user-select: none;
+            z-index: 15;
+            transition: all 0.3s ease;
+            filter: drop-shadow(0 4px 8px rgba(0,0,0,0.3));
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+        }
+
+        .animal:hover {
+            transform: scale(1.2) rotate(5deg);
+            filter: drop-shadow(0 8px 16px rgba(0,0,0,0.4)) brightness(1.1);
+        }
+
+        .animal-name {
+            position: absolute;
+            bottom: -25px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 12px;
+            white-space: nowrap;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .animal:hover .animal-name {
+            opacity: 1;
+        }
+
+        /* Animal animations */
+        .orangutan {
+            animation: walk 8s ease-in-out infinite;
+        }
+
+        .alien {
+            animation: float 6s ease-in-out infinite;
+        }
+
+        .giraffe {
+            animation: graze 10s ease-in-out infinite;
+        }
+
+        .raccoon {
+            animation: scurry 5s ease-in-out infinite;
+        }
+
+        .duck {
+            animation: waddle 7s ease-in-out infinite;
+        }
+
+        .crocodile {
+            animation: crawl 9s ease-in-out infinite;
+        }
+
+        .butterfly {
+            animation: flutter 4s ease-in-out infinite;
+        }
+
+        .mouse {
+            animation: scurry 3s ease-in-out infinite;
+        }
+
+        .lion {
+            animation: prowl 6s ease-in-out infinite;
+        }
+
+        .scorpion {
+            animation: scuttle 4s ease-in-out infinite;
+        }
+
+        .cheetah {
+            animation: sprint 3s ease-in-out infinite;
+        }
+
+        .gorilla {
+            animation: beat 6s ease-in-out infinite;
+        }
+
+        .flamingo {
+            animation: strut 5s ease-in-out infinite;
+        }
+
+        /* Fighting states */
+        .animal.fighting {
+            animation-play-state: paused;
+            transform: scale(1.3);
+            filter: brightness(1.2);
+        }
+
+        .animal.attacking {
+            animation: attack 0.5s ease-in-out;
+        }
+
+        .animal.damaged {
+            animation: damage 0.3s ease-in-out;
+        }
+
+        .animal.defeated {
+            opacity: 0.3;
+            transform: scale(0.5) rotate(180deg);
+            animation-play-state: paused;
+        }
+
+        .health-bar {
+            position: absolute;
+            top: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 60px;
+            height: 6px;
+            background: #ff4444;
+            border-radius: 3px;
+            overflow: hidden;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .health-fill {
+            height: 100%;
+            background: linear-gradient(to right, #ff4444, #44ff44);
+            transition: width 0.3s ease;
+        }
+
+        .animal:hover .health-bar {
+            opacity: 1;
+        }
+
+        .animal.fighting .health-bar {
+            opacity: 1;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px) translateX(0px); }
+            25% { transform: translateY(-20px) translateX(50px); }
+            50% { transform: translateY(-10px) translateX(100px); }
+            75% { transform: translateY(-30px) translateX(150px); }
+        }
+
+        @keyframes walk {
+            0% { transform: translateX(0px) translateY(0px); }
+            25% { transform: translateX(200px) translateY(-10px); }
+            50% { transform: translateX(400px) translateY(0px); }
+            75% { transform: translateX(600px) translateY(-15px); }
+            100% { transform: translateX(800px) translateY(0px); }
+        }
+
+        @keyframes graze {
+            0%, 100% { transform: translateX(0px) translateY(0px) rotate(0deg); }
+            25% { transform: translateX(150px) translateY(-5px) rotate(5deg); }
+            50% { transform: translateX(300px) translateY(0px) rotate(0deg); }
+            75% { transform: translateX(450px) translateY(-8px) rotate(-5deg); }
+        }
+
+        @keyframes scurry {
+            0% { transform: translateX(0px) translateY(0px); }
+            20% { transform: translateX(100px) translateY(-5px); }
+            40% { transform: translateX(200px) translateY(0px); }
+            60% { transform: translateX(300px) translateY(-3px); }
+            80% { transform: translateX(400px) translateY(0px); }
+            100% { transform: translateX(500px) translateY(-2px); }
+        }
+
+        @keyframes waddle {
+            0%, 100% { transform: translateX(0px) translateY(0px) rotate(0deg); }
+            25% { transform: translateX(150px) translateY(-8px) rotate(3deg); }
+            50% { transform: translateX(300px) translateY(0px) rotate(0deg); }
+            75% { transform: translateX(450px) translateY(-12px) rotate(-3deg); }
+        }
+
+        @keyframes crawl {
+            0%, 100% { transform: translateX(0px) translateY(0px) rotate(0deg); }
+            25% { transform: translateX(180px) translateY(-5px) rotate(2deg); }
+            50% { transform: translateX(360px) translateY(0px) rotate(0deg); }
+            75% { transform: translateX(540px) translateY(-8px) rotate(-2deg); }
+        }
+
+        @keyframes flutter {
+            0%, 100% { transform: translateY(0px) translateX(0px) rotate(0deg); }
+            25% { transform: translateY(-30px) translateX(80px) rotate(10deg); }
+            50% { transform: translateY(-15px) translateX(160px) rotate(0deg); }
+            75% { transform: translateY(-40px) translateX(240px) rotate(-10deg); }
+        }
+
+        @keyframes prowl {
+            0%, 100% { transform: translateX(0px) translateY(0px) rotate(0deg); }
+            25% { transform: translateX(200px) translateY(-5px) rotate(2deg); }
+            50% { transform: translateX(400px) translateY(0px) rotate(0deg); }
+            75% { transform: translateX(600px) translateY(-8px) rotate(-2deg); }
+        }
+
+        @keyframes scuttle {
+            0%, 100% { transform: translateX(0px) translateY(0px) rotate(0deg); }
+            25% { transform: translateX(120px) translateY(-3px) rotate(3deg); }
+            50% { transform: translateX(240px) translateY(0px) rotate(0deg); }
+            75% { transform: translateX(360px) translateY(-5px) rotate(-3deg); }
+        }
+
+        @keyframes sprint {
+            0%, 100% { transform: translateX(0px) translateY(0px) rotate(0deg); }
+            25% { transform: translateX(150px) translateY(-8px) rotate(2deg); }
+            50% { transform: translateX(300px) translateY(0px) rotate(0deg); }
+            75% { transform: translateX(450px) translateY(-12px) rotate(-2deg); }
+        }
+
+        @keyframes beat {
+            0%, 100% { transform: translateX(0px) translateY(0px) rotate(0deg); }
+            25% { transform: translateX(100px) translateY(-5px) rotate(1deg); }
+            50% { transform: translateX(200px) translateY(0px) rotate(0deg); }
+            75% { transform: translateX(300px) translateY(-8px) rotate(-1deg); }
+        }
+
+        @keyframes strut {
+            0%, 100% { transform: translateX(0px) translateY(0px) rotate(0deg); }
+            25% { transform: translateX(120px) translateY(-6px) rotate(2deg); }
+            50% { transform: translateX(240px) translateY(0px) rotate(0deg); }
+            75% { transform: translateX(360px) translateY(-10px) rotate(-2deg); }
+        }
+
+        @keyframes attack {
+            0% { transform: scale(1) rotate(0deg); }
+            50% { transform: scale(1.5) rotate(10deg); }
+            100% { transform: scale(1) rotate(0deg); }
+        }
+
+        @keyframes damage {
+            0%, 100% { transform: translateX(0px); }
+            25% { transform: translateX(-10px); }
+            75% { transform: translateX(10px); }
+        }
+
+        @keyframes sway {
+            0%, 100% { transform: skewX(0deg); }
+            50% { transform: skewX(2deg); }
+        }
+
+        .title {
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: white;
+            font-size: 2.5em;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+            z-index: 20;
+        }
+
+        .sun {
+            position: absolute;
+            top: 30px;
+            right: 50px;
+            width: 60px;
+            height: 60px;
+            background: radial-gradient(circle, #FFD700, #FFA500);
+            border-radius: 50%;
+            box-shadow: 0 0 20px rgba(255, 215, 0, 0.5);
+            animation: pulse 4s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
+        /* Betting Panel Styles */
+        .betting-panel {
+            position: absolute;
+            top: 80px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: linear-gradient(135deg, rgba(255,255,255,0.1), rgba(255,255,255,0.05));
+            backdrop-filter: blur(20px);
+            border: 2px solid rgba(255,255,255,0.2);
+            color: white;
+            padding: 25px;
+            border-radius: 20px;
+            z-index: 25;
+            min-width: 450px;
+            text-align: center;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.2);
+        }
+
+        .betting-panel h2 {
+            margin: 0 0 20px 0;
+            font-size: 2em;
+            color: #FFD700;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+            background: linear-gradient(45deg, #FFD700, #FFA500);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .betting-controls {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-bottom: 15px;
+        }
+
+        .bet-section {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .bet-section label {
+            font-size: 0.9em;
+            font-weight: bold;
+        }
+
+        .bet-section input, .bet-section select {
+            padding: 8px 15px;
+            border-radius: 10px;
+            border: 2px solid rgba(255,255,255,0.3);
+            background: rgba(255,255,255,0.1);
+            color: white;
+            font-size: 0.9em;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+        }
+
+        .bet-section input:focus, .bet-section select:focus {
+            outline: none;
+            border-color: #FFD700;
+            box-shadow: 0 0 10px rgba(255,215,0,0.3);
+        }
+
+        .bet-section input::placeholder {
+            color: rgba(255,255,255,0.7);
+        }
+
+        .bet-section button {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 0.9em;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+
+        #placeBet {
+            background: linear-gradient(45deg, #4CAF50, #45a049);
+            color: white;
+        }
+
+        #placeBet:hover {
+            background: linear-gradient(45deg, #45a049, #4CAF50);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(76,175,80,0.4);
+        }
+
+        #startFight {
+            background: linear-gradient(45deg, #f44336, #da190b);
+            color: white;
+        }
+
+        #startFight:hover:not(:disabled) {
+            background: linear-gradient(45deg, #da190b, #f44336);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(244,67,54,0.4);
+        }
+
+        #startFight:disabled {
+            background: linear-gradient(45deg, #666, #555);
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+
+        #resetGame {
+            background: linear-gradient(45deg, #ff9800, #e68900);
+            color: white;
+        }
+
+        #resetGame:hover {
+            background: linear-gradient(45deg, #e68900, #ff9800);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(255,152,0,0.4);
+        }
+
+        .game-info {
+            display: flex;
+            justify-content: space-around;
+            gap: 20px;
+            font-size: 0.9em;
+            margin-top: 15px;
+        }
+
+        .pot-info, .status-info, .balance-info {
+            font-weight: bold;
+            padding: 8px 15px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 10px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+
+        .winner-info {
+            background: linear-gradient(45deg, #FFD700, #FFA500);
+            color: #000;
+            padding: 15px;
+            border-radius: 15px;
+            font-weight: bold;
+            font-size: 1.1em;
+            box-shadow: 0 8px 25px rgba(255,215,0,0.3);
+            animation: winnerPulse 2s ease-in-out infinite;
+        }
+
+        @keyframes winnerPulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+    </style>
+</head>
+<body>
+    <div class="sky">
+        <div class="clouds">
+            <div class="cloud cloud1"></div>
+            <div class="cloud cloud2"></div>
+        </div>
+        <div class="sun"></div>
+    </div>
+    
+    <h1 class="title">🐛 The Zoo 🐌</h1>
+    
+    <!-- Betting Interface -->
+    <div class="betting-panel">
+        <h2>🏆 Animal Battle Arena 🏆</h2>
+        <div class="betting-controls">
+            <div class="bet-section">
+                <label for="betAmount">Bet Amount: $</label>
+                <input type="number" id="betAmount" value="10" min="1" max="1000">
+            </div>
+            <div class="bet-section">
+                <label for="animalSelect">Choose Your Fighter:</label>
+                <select id="animalSelect">
+                    <option value="">Select an animal...</option>
+                </select>
+            </div>
+            <div class="bet-section">
+                <button id="placeBet" onclick="placeBet()">Place Bet</button>
+                <button id="startFight" onclick="startFight()" disabled>Start Battle!</button>
+                <button id="resetGame" onclick="resetGame()">Reset</button>
+            </div>
+        </div>
+        <div class="game-info">
+            <div class="balance-info">💰 Balance: $<span id="playerBalance">10000</span></div>
+            <div class="pot-info">Total Pot: $<span id="totalPot">0</span></div>
+            <div class="status-info">Status: <span id="gameStatus">Place your bets!</span></div>
+            <div class="winner-info" id="winnerInfo" style="display: none;"></div>
+        </div>
+    </div>
+    
+    <div class="grass-field">
+        <div class="grass-blades" id="grassBlades"></div>
+        <div class="animals-container" id="animalsContainer">
+            <!-- Animals will be dynamically added here -->
+        </div>
+    </div>
+
+    <script>
+        // Animal data from script.js
+        let orang = "🦧";
+        let alien = "👽";
+        let giraffe = "🦒";
+        let raccoon = "🦝";
+        let duck = "🦆";
+        let crocdile = "🐊";
+        let butterfly = "🦋";
+        let mouse = "🐹";
+        let lion = "🦁";
+        let scorpion = "🦂";
+        let cheetah = "🐆";
+        let gorilla = "🦍";
+        let flamingo = "🦩";
+
+        // Create a map of animals with their classes, health, and attack power
+        // Perfectly balanced stats: Each animal has unique strengths and weaknesses
+        const animalMap = new Map([
+            // TIER 1: Balanced Fighters (Good all-around stats)
+            ['Lion', { emoji: lion, class: 'lion', health: 100, attack: 30, speed: 4 }],
+            ['Gorilla', { emoji: gorilla, class: 'gorilla', health: 105, attack: 32, speed: 3 }],
+            
+            // TIER 2: Tanks (High health, moderate attack, low speed)
+            ['Giraffe', { emoji: giraffe, class: 'giraffe', health: 120, attack: 20, speed: 2 }],
+            ['Crocodile', { emoji: crocdile, class: 'crocodile', health: 125, attack: 25, speed: 2 }],
+            
+            // TIER 3: Glass Cannons (High attack, low health, moderate speed)
+            ['Raccoon', { emoji: raccoon, class: 'raccoon', health: 65, attack: 35, speed: 5 }],
+            ['Alien', { emoji: alien, class: 'alien', health: 70, attack: 32, speed: 4 }],
+            ['Scorpion', { emoji: scorpion, class: 'scorpion', health: 60, attack: 38, speed: 4 }],
+            
+            // TIER 4: Agile Fighters (High speed, balanced stats)
+            ['Cheetah', { emoji: cheetah, class: 'cheetah', health: 80, attack: 25, speed: 7 }],
+            ['Mouse', { emoji: mouse, class: 'mouse', health: 70, attack: 22, speed: 6 }],
+            ['Duck', { emoji: duck, class: 'duck', health: 60, attack: 20, speed: 5 }],
+            
+            // TIER 5: Specialized (Unique roles)
+            ['Orangutan', { emoji: orang, class: 'orangutan', health: 90, attack: 25, speed: 3 }], // Balanced
+            ['Flamingo', { emoji: flamingo, class: 'flamingo', health: 75, attack: 18, speed: 5 }], // Graceful
+            ['Butterfly', { emoji: butterfly, class: 'butterfly', health: 50, attack: 15, speed: 8 }] // Fastest, weakest
+        ]);
+
+        // Game state
+        let gameState = {
+            isFighting: false,
+            winner: null,
+            bets: new Map(),
+            totalPot: 0,
+            currentHealth: new Map(),
+            playerBalance: 10000, // Starting balance
+            winningBets: new Map()
+        };
+
+        // Function to create grass blades
+        function createGrass() {
+            const grassContainer = document.getElementById('grassBlades');
+            const grassCount = 200;
+            
+            for (let i = 0; i < grassCount; i++) {
+                const grassBlade = document.createElement('div');
+                grassBlade.className = 'grass-blade';
+                grassBlade.style.left = Math.random() * 100 + '%';
+                grassBlade.style.height = (Math.random() * 100 + 50) + 'px';
+                grassBlade.style.animationDelay = Math.random() * 3 + 's';
+                grassContainer.appendChild(grassBlade);
+            }
+        }
+
+        // Function to display animals
+        function displayAnimals() {
+            const animalsContainer = document.getElementById('animalsContainer');
+            
+            animalMap.forEach((animalData, name) => {
+                const animalDiv = document.createElement('div');
+                animalDiv.className = `animal ${animalData.class}`;
+                animalDiv.id = `animal-${name.toLowerCase()}`;
+                animalDiv.innerHTML = `
+                    ${animalData.emoji}
+                    <div class="animal-name">${name}</div>
+                    <div class="health-bar">
+                        <div class="health-fill" style="width: 100%"></div>
+                    </div>
+                `;
+                
+                // Random starting positions
+                animalDiv.style.left = Math.random() * 80 + '%';
+                animalDiv.style.bottom = Math.random() * 200 + 'px';
+                
+                animalsContainer.appendChild(animalDiv);
+                
+                // Initialize health
+                gameState.currentHealth.set(name, animalData.health);
+            });
+        }
+
+        // Function to populate animal select dropdown
+        function populateAnimalSelect() {
+            const select = document.getElementById('animalSelect');
+            animalMap.forEach((animalData, name) => {
+                const option = document.createElement('option');
+                option.value = name;
+                option.textContent = `${animalData.emoji} ${name} (HP: ${animalData.health}, ATK: ${animalData.attack})`;
+                select.appendChild(option);
+            });
+        }
+
+        // Betting functions
+        function placeBet() {
+            const betAmount = parseInt(document.getElementById('betAmount').value);
+            const selectedAnimal = document.getElementById('animalSelect').value;
+            
+            if (!selectedAnimal || betAmount <= 0) {
+                alert('Please select an animal and enter a valid bet amount!');
+                return;
+            }
+            
+            if (betAmount > gameState.playerBalance) {
+                alert(`Insufficient balance! You only have $${gameState.playerBalance}`);
+                return;
+            }
+            
+            // Deduct from balance
+            gameState.playerBalance -= betAmount;
+            gameState.bets.set(selectedAnimal, (gameState.bets.get(selectedAnimal) || 0) + betAmount);
+            gameState.totalPot += betAmount;
+            
+            updateGameInfo();
+            document.getElementById('startFight').disabled = false;
+            document.getElementById('gameStatus').textContent = `Bet placed! Total pot: $${gameState.totalPot}`;
+        }
+
+        function startFight() {
+            if (gameState.bets.size === 0) {
+                alert('Please place at least one bet before starting!');
+                return;
+            }
+            
+            gameState.isFighting = true;
+            document.getElementById('startFight').disabled = true;
+            document.getElementById('placeBet').disabled = true;
+            document.getElementById('gameStatus').textContent = 'Battle in progress...';
+            
+            // Start the battle
+            battleAnimals();
+        }
+
+        function resetGame() {
+            gameState.isFighting = false;
+            gameState.winner = null;
+            gameState.bets.clear();
+            gameState.totalPot = 0;
+            gameState.winningBets.clear();
+            
+            // Reset all animals
+            animalMap.forEach((animalData, name) => {
+                const animalDiv = document.getElementById(`animal-${name.toLowerCase()}`);
+                if (animalDiv) {
+                    animalDiv.className = `animal ${animalData.class}`;
+                    animalDiv.querySelector('.health-fill').style.width = '100%';
+                    animalDiv.style.animation = ''; // Reset any special animations
+                    gameState.currentHealth.set(name, animalData.health);
+                }
+            });
+            
+            // Reset UI
+            document.getElementById('startFight').disabled = true;
+            document.getElementById('placeBet').disabled = false;
+            document.getElementById('animalSelect').value = '';
+            document.getElementById('betAmount').value = '10';
+            document.getElementById('winnerInfo').style.display = 'none';
+            updateGameInfo();
+        }
+
+        function updateGameInfo() {
+            document.getElementById('playerBalance').textContent = gameState.playerBalance;
+            document.getElementById('totalPot').textContent = gameState.totalPot;
+            
+            if (gameState.winner) {
+                document.getElementById('gameStatus').textContent = `Winner: ${gameState.winner}`;
+                document.getElementById('winnerInfo').style.display = 'block';
+                
+                // Calculate payouts using 2.5x multiplier
+                const winnerBets = gameState.bets.get(gameState.winner) || 0;
+                if (winnerBets > 0) {
+                    const payout = Math.floor(winnerBets * 2.5); // 2.5x multiplier on your bet
+                    gameState.playerBalance += payout;
+                    document.getElementById('winnerInfo').innerHTML = `🏆 ${gameState.winner} wins! You bet $${winnerBets} and earned $${payout}! (2.5x multiplier) 🏆`;
+                } else {
+                    document.getElementById('winnerInfo').innerHTML = `🏆 ${gameState.winner} wins! No payout - you didn't bet on the winner! 🏆`;
+                }
+            } else if (gameState.isFighting) {
+                document.getElementById('gameStatus').textContent = 'Battle in progress...';
+            } else {
+                document.getElementById('gameStatus').textContent = 'Place your bets!';
+            }
+        }
+
+        // Battle system
+        function battleAnimals() {
+            const aliveAnimals = Array.from(animalMap.keys()).filter(name => 
+                gameState.currentHealth.get(name) > 0
+            );
+            
+            if (aliveAnimals.length <= 1) {
+                endBattle(aliveAnimals[0]);
+                return;
+            }
+            
+            // Select two random animals to fight
+            const fighter1 = aliveAnimals[Math.floor(Math.random() * aliveAnimals.length)];
+            let fighter2 = aliveAnimals[Math.floor(Math.random() * aliveAnimals.length)];
+            while (fighter2 === fighter1) {
+                fighter2 = aliveAnimals[Math.floor(Math.random() * aliveAnimals.length)];
+            }
+            
+            // Animate the fight
+            animateFight(fighter1, fighter2);
+            
+            // Calculate damage after a short delay
+            setTimeout(() => {
+                performAttack(fighter1, fighter2);
+                performAttack(fighter2, fighter1);
+                
+                // Continue battle after another delay
+                setTimeout(() => battleAnimals(), 1000);
+            }, 500);
+        }
+
+        function animateFight(fighter1, fighter2) {
+            const animal1 = document.getElementById(`animal-${fighter1.toLowerCase()}`);
+            const animal2 = document.getElementById(`animal-${fighter2.toLowerCase()}`);
+            
+            if (animal1 && animal2) {
+                animal1.classList.add('fighting', 'attacking');
+                animal2.classList.add('fighting', 'attacking');
+                
+                setTimeout(() => {
+                    animal1.classList.remove('attacking');
+                    animal2.classList.remove('attacking');
+                }, 500);
+            }
+        }
+
+        function performAttack(attacker, defender) {
+            const attackerData = animalMap.get(attacker);
+            const currentHealth = gameState.currentHealth.get(defender);
+            const damage = Math.floor(Math.random() * attackerData.attack) + 1;
+            const newHealth = Math.max(0, currentHealth - damage);
+            
+            gameState.currentHealth.set(defender, newHealth);
+            
+            const defenderElement = document.getElementById(`animal-${defender.toLowerCase()}`);
+            if (defenderElement) {
+                const healthBar = defenderElement.querySelector('.health-fill');
+                const healthPercent = (newHealth / animalMap.get(defender).health) * 100;
+                healthBar.style.width = healthPercent + '%';
+                
+                if (newHealth <= 0) {
+                    defenderElement.classList.add('defeated');
+                    defenderElement.classList.remove('fighting');
+                } else {
+                    defenderElement.classList.add('damaged');
+                    setTimeout(() => defenderElement.classList.remove('damaged'), 300);
+                }
+            }
+        }
+
+        function endBattle(winner) {
+            gameState.isFighting = false;
+            gameState.winner = winner;
+            
+            // Show winner
+            const winnerElement = document.getElementById(`animal-${winner.toLowerCase()}`);
+            if (winnerElement) {
+                winnerElement.classList.add('fighting');
+                winnerElement.style.animation = 'pulse 1s infinite';
+            }
+            
+            updateGameInfo();
+            
+            // Announce winner with payout info
+            setTimeout(() => {
+                const winnerBets = gameState.bets.get(winner) || 0;
+                if (winnerBets > 0) {
+                    const payout = Math.floor(winnerBets * 2.5);
+                    alert(`🏆 ${winner} wins the battle! 🏆\nYou bet $${winnerBets} and earned $${payout}! (2.5x multiplier)\nNew balance: $${gameState.playerBalance}`);
+                } else {
+                    alert(`🏆 ${winner} wins the battle! 🏆\nYou didn't bet on the winner, so no payout.\nBalance: $${gameState.playerBalance}`);
+                }
+            }, 1000);
+        }
+
+        // Initialize everything when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            createGrass();
+            displayAnimals();
+            populateAnimalSelect();
+            updateGameInfo();
+        });
+    </script>
+</body>
+</html>
