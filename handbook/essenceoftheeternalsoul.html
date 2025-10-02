@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Essence of the Eternal Soul - The Spellcaster's Handbook</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .spell-casting {
+            text-align: center;
+            margin: 40px 0;
+        }
+
+        .cast-button {
+            font-family: 'Canterbury', Georgia, serif;
+            background: linear-gradient(to bottom, #a58c6e, #8b6f47);
+            color: #f4e8d0;
+            border: 3px solid #6b5435;
+            padding: 15px 40px;
+            font-size: 1.3em;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+
+        .cast-button:hover {
+            background: linear-gradient(to bottom, #b89c7e, #9b7f57);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.4);
+        }
+
+        .cast-button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .listening {
+            color: #8b4513;
+            font-size: 1.2em;
+            margin: 20px 0;
+            font-style: italic;
+            min-height: 30px;
+        }
+
+        .spell-effect {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1000;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+        }
+
+        .spell-effect.active {
+            opacity: 1;
+        }
+
+        .eternal-particle {
+            position: absolute;
+            background: radial-gradient(circle, rgba(173, 216, 230, 0.8), rgba(135, 206, 250, 0.6), rgba(176, 224, 230, 0.4), transparent);
+            border-radius: 50%;
+            pointer-events: none;
+            animation: eternal 4.2s ease-out forwards;
+        }
+
+        @keyframes eternal {
+            0% {
+                opacity: 1;
+                transform: scale(0) translateY(0) rotate(0deg);
+            }
+            20% {
+                opacity: 0.95;
+                transform: scale(1.1) translateY(-15px) rotate(72deg);
+            }
+            40% {
+                opacity: 0.85;
+                transform: scale(2.1) translateY(-35px) rotate(144deg);
+            }
+            60% {
+                opacity: 0.7;
+                transform: scale(3.1) translateY(-60px) rotate(216deg);
+            }
+            80% {
+                opacity: 0.5;
+                transform: scale(4.1) translateY(-90px) rotate(288deg);
+            }
+            100% {
+                opacity: 0;
+                transform: scale(5.2) translateY(-125px) rotate(360deg);
+            }
+        }
+
+        .eternal-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at center, 
+                transparent 0%, 
+                rgba(176, 224, 230, 0.2) 15%, 
+                rgba(135, 206, 250, 0.3) 35%, 
+                rgba(173, 216, 230, 0.4) 55%, 
+                rgba(135, 206, 250, 0.3) 75%, 
+                transparent 100%);
+            animation: eternalPulse 3.2s ease-in-out;
+        }
+
+        @keyframes eternalPulse {
+            0%, 100% {
+                opacity: 0;
+            }
+            20% {
+                opacity: 0.3;
+            }
+            40% {
+                opacity: 0.6;
+            }
+            60% {
+                opacity: 0.8;
+            }
+            80% {
+                opacity: 0.5;
+            }
+        }
+
+        .spell-result {
+            font-size: 1.3em;
+            color: #4682b4;
+            margin: 20px 0;
+            min-height: 40px;
+            font-weight: bold;
+        }
+
+        .instructions {
+            background: rgba(139,111,71,0.1);
+            padding: 20px;
+            margin: 30px 0;
+            border: 1px solid #a58c6e;
+            border-radius: 5px;
+        }
+
+        .instructions h3 {
+            margin-top: 0;
+            color: #3a1f0f;
+        }
+
+        .instructions ul {
+            text-align: left;
+            margin: 15px auto;
+            max-width: 500px;
+        }
+    </style>
+</head>
+<body>
+    <main class="page-container">
+        <h1>Essence of the Eternal Soul</h1>
+        
+        <p>An ancient incantation that binds the very essence of eternal existence into the caster's soul, granting them unending life that transcends the boundaries of time itself.</p>
+        
+        <div class="instructions">
+            <h3>To Cast This Spell:</h3>
+            <ul>
+                <li>Click the "Begin Incantation" button below</li>
+                <li>Speak clearly: <strong>"Essence of the Eternal Soul"</strong></li>
+                <li>The spell will activate when the words are recognized</li>
+                <li>You may need to grant microphone permissions</li>
+            </ul>
+        </div>
+
+        <div class="spell-casting">
+            <button id="castButton" class="cast-button">Begin Incantation</button>
+            <div id="listeningStatus" class="listening"></div>
+            <div id="spellResult" class="spell-result"></div>
+        </div>
+
+        <div class="flourish">❦ ❦ ❦</div>
+        
+        <div class="bottom-right-link">
+            <a href="incantations.html">← Back to Incantations</a>
+        </div>
+    </main>
+
+    <div id="spellEffect" class="spell-effect"></div>
+
+    <script>
+        const castButton = document.getElementById('castButton');
+        const listeningStatus = document.getElementById('listeningStatus');
+        const spellResult = document.getElementById('spellResult');
+        const spellEffect = document.getElementById('spellEffect');
+
+        let recognition = null;
+        let isListening = false;
+
+        // Check if browser supports speech recognition
+        if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            recognition = new SpeechRecognition();
+            recognition.continuous = false;
+            recognition.interimResults = true;
+            recognition.lang = 'en-US';
+
+            recognition.onstart = () => {
+                isListening = true;
+                castButton.disabled = true;
+                castButton.textContent = 'Listening...';
+                listeningStatus.textContent = 'Speak the incantation...';
+                spellResult.textContent = '';
+            };
+
+            recognition.onresult = (event) => {
+                const transcript = Array.from(event.results)
+                    .map(result => result[0].transcript)
+                    .join('')
+                    .toLowerCase()
+                    .trim();
+
+                listeningStatus.textContent = `Heard: "${transcript}"`;
+
+                // Check if the spell was cast correctly
+                if (transcript.includes('essence of the eternal soul') || 
+                    transcript.includes('essence of eternal soul') ||
+                    transcript.includes('essence eternal soul')) {
+                    castSpell();
+                }
+            };
+
+            recognition.onerror = (event) => {
+                console.error('Speech recognition error:', event.error);
+                if (event.error === 'no-speech') {
+                    listeningStatus.textContent = 'No speech detected. Try again.';
+                } else if (event.error === 'not-allowed') {
+                    listeningStatus.textContent = 'Microphone access denied. Please grant permissions.';
+                } else {
+                    listeningStatus.textContent = 'Error occurred. Please try again.';
+                }
+                resetButton();
+            };
+
+            recognition.onend = () => {
+                if (isListening) {
+                    resetButton();
+                }
+            };
+
+            castButton.addEventListener('click', () => {
+                if (!isListening) {
+                    recognition.start();
+                }
+            });
+        } else {
+            castButton.disabled = true;
+            castButton.textContent = 'Speech Recognition Not Supported';
+            listeningStatus.textContent = 'Your browser does not support speech recognition. Try Chrome or Edge.';
+        }
+
+        function resetButton() {
+            isListening = false;
+            castButton.disabled = false;
+            castButton.textContent = 'Begin Incantation';
+            setTimeout(() => {
+                listeningStatus.textContent = '';
+            }, 3000);
+        }
+
+        function castSpell() {
+            isListening = false;
+            spellResult.textContent = 'The eternal essence flows...';
+            listeningStatus.textContent = '';
+            
+            // Create visual effect
+            spellEffect.classList.add('active');
+            
+            // Create eternal overlay
+            const eternalOverlay = document.createElement('div');
+            eternalOverlay.className = 'eternal-overlay';
+            spellEffect.appendChild(eternalOverlay);
+            
+            // Create particle effects
+            for (let i = 0; i < 65; i++) {
+                setTimeout(() => {
+                    createParticle();
+                }, i * 38);
+            }
+            
+            // Clean up after animation
+            setTimeout(() => {
+                spellEffect.classList.remove('active');
+                setTimeout(() => {
+                    spellEffect.innerHTML = '';
+                }, 500);
+            }, 4200);
+            
+            resetButton();
+        }
+
+        function createParticle() {
+            const particle = document.createElement('div');
+            particle.className = 'eternal-particle';
+            
+            // Random size between 18-72px
+            const size = Math.random() * 54 + 18;
+            particle.style.width = size + 'px';
+            particle.style.height = size + 'px';
+            
+            // Random position
+            particle.style.left = Math.random() * 100 + '%';
+            particle.style.top = Math.random() * 100 + '%';
+            
+            // Random animation duration
+            particle.style.animationDuration = (Math.random() * 2 + 3.2) + 's';
+            
+            spellEffect.appendChild(particle);
+            
+            // Remove particle after animation
+            setTimeout(() => {
+                particle.remove();
+            }, 5200);
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Veil of the Vanished - The Spellcaster's Handbook</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .spell-casting {
+            text-align: center;
+            margin: 40px 0;
+        }
+
+        .cast-button {
+            font-family: 'Canterbury', Georgia, serif;
+            background: linear-gradient(to bottom, #a58c6e, #8b6f47);
+            color: #f4e8d0;
+            border: 3px solid #6b5435;
+            padding: 15px 40px;
+            font-size: 1.3em;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+
+        .cast-button:hover {
+            background: linear-gradient(to bottom, #b89c7e, #9b7f57);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.4);
+        }
+
+        .cast-button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .listening {
+            color: #8b4513;
+            font-size: 1.2em;
+            margin: 20px 0;
+            font-style: italic;
+            min-height: 30px;
+        }
+
+        .spell-effect {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1000;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+        }
+
+        .spell-effect.active {
+            opacity: 1;
+        }
+
+        .veil-particle {
+            position: absolute;
+            background: radial-gradient(circle, rgba(147, 112, 219, 0.8), transparent);
+            border-radius: 50%;
+            pointer-events: none;
+            animation: vanish 3s ease-out forwards;
+        }
+
+        @keyframes vanish {
+            0% {
+                opacity: 1;
+                transform: scale(0) translateY(0);
+            }
+            50% {
+                opacity: 0.7;
+            }
+            100% {
+                opacity: 0;
+                transform: scale(3) translateY(-100px);
+            }
+        }
+
+        .veil-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at center, 
+                transparent 0%, 
+                rgba(75, 0, 130, 0.3) 30%, 
+                rgba(147, 112, 219, 0.4) 50%, 
+                transparent 100%);
+            animation: veilPulse 2s ease-in-out;
+        }
+
+        @keyframes veilPulse {
+            0%, 100% {
+                opacity: 0;
+            }
+            50% {
+                opacity: 1;
+            }
+        }
+
+        .spell-result {
+            font-size: 1.3em;
+            color: #4b0082;
+            margin: 20px 0;
+            min-height: 40px;
+            font-weight: bold;
+        }
+
+        .instructions {
+            background: rgba(139,111,71,0.1);
+            padding: 20px;
+            margin: 30px 0;
+            border: 1px solid #a58c6e;
+            border-radius: 5px;
+        }
+
+        .instructions h3 {
+            margin-top: 0;
+            color: #3a1f0f;
+        }
+
+        .instructions ul {
+            text-align: left;
+            margin: 15px auto;
+            max-width: 500px;
+        }
+    </style>
+</head>
+<body>
+    <main class="page-container">
+        <h1>Veil of the Vanished</h1>
+        
+        <p>An ancient incantation that obscures the victim from mortal eyes and from memory itself, effectively disolving them from the collective consciousness of the world.</p>
+        
+        <div class="instructions">
+            <h3>To Cast This Spell:</h3>
+            <ul>
+                <li>Click the "Begin Incantation" button below</li>
+                <li>Speak clearly: <strong>"Veil of the Vanished"</strong></li>
+                <li>The spell will activate when the words are recognized</li>
+                <li>You may need to grant microphone permissions</li>
+            </ul>
+        </div>
+
+        <div class="spell-casting">
+            <button id="castButton" class="cast-button">Begin Incantation</button>
+            <div id="listeningStatus" class="listening"></div>
+            <div id="spellResult" class="spell-result"></div>
+        </div>
+
+        <div class="flourish">❦ ❦ ❦</div>
+        
+        <div class="bottom-right-link">
+            <a href="incantations.html">← Back to Incantations</a>
+        </div>
+    </main>
+
+    <div id="spellEffect" class="spell-effect"></div>
+
+    <script>
+        const castButton = document.getElementById('castButton');
+        const listeningStatus = document.getElementById('listeningStatus');
+        const spellResult = document.getElementById('spellResult');
+        const spellEffect = document.getElementById('spellEffect');
+
+        let recognition = null;
+        let isListening = false;
+
+        // Check if browser supports speech recognition
+        if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            recognition = new SpeechRecognition();
+            recognition.continuous = false;
+            recognition.interimResults = true;
+            recognition.lang = 'en-US';
+
+            recognition.onstart = () => {
+                isListening = true;
+                castButton.disabled = true;
+                castButton.textContent = 'Listening...';
+                listeningStatus.textContent = 'Speak the incantation...';
+                spellResult.textContent = '';
+            };
+
+            recognition.onresult = (event) => {
+                const transcript = Array.from(event.results)
+                    .map(result => result[0].transcript)
+                    .join('')
+                    .toLowerCase()
+                    .trim();
+
+                listeningStatus.textContent = `Heard: "${transcript}"`;
+
+                // Check if the spell was cast correctly
+                if (transcript.includes('veil of the vanished') || 
+                    transcript.includes('veil of vanished') ||
+                    transcript.includes('vale of the vanished')) {
+                    castSpell();
+                }
+            };
+
+            recognition.onerror = (event) => {
+                console.error('Speech recognition error:', event.error);
+                if (event.error === 'no-speech') {
+                    listeningStatus.textContent = 'No speech detected. Try again.';
+                } else if (event.error === 'not-allowed') {
+                    listeningStatus.textContent = 'Microphone access denied. Please grant permissions.';
+                } else {
+                    listeningStatus.textContent = 'Error occurred. Please try again.';
+                }
+                resetButton();
+            };
+
+            recognition.onend = () => {
+                if (isListening) {
+                    resetButton();
+                }
+            };
+
+            castButton.addEventListener('click', () => {
+                if (!isListening) {
+                    recognition.start();
+                }
+            });
+        } else {
+            castButton.disabled = true;
+            castButton.textContent = 'Speech Recognition Not Supported';
+            listeningStatus.textContent = 'Your browser does not support speech recognition. Try Chrome or Edge.';
+        }
+
+        function resetButton() {
+            isListening = false;
+            castButton.disabled = false;
+            castButton.textContent = 'Begin Incantation';
+            setTimeout(() => {
+                listeningStatus.textContent = '';
+            }, 3000);
+        }
+
+        function castSpell() {
+            isListening = false;
+            spellResult.textContent = 'The spell is cast...';
+            listeningStatus.textContent = '';
+            
+            // Create visual effect
+            spellEffect.classList.add('active');
+            
+            // Create veil overlay
+            const veilOverlay = document.createElement('div');
+            veilOverlay.className = 'veil-overlay';
+            spellEffect.appendChild(veilOverlay);
+            
+            // Create particle effects
+            for (let i = 0; i < 50; i++) {
+                setTimeout(() => {
+                    createParticle();
+                }, i * 50);
+            }
+            
+            // Clean up after animation
+            setTimeout(() => {
+                spellEffect.classList.remove('active');
+                setTimeout(() => {
+                    spellEffect.innerHTML = '';
+                }, 500);
+            }, 3000);
+            
+            resetButton();
+        }
+
+        function createParticle() {
+            const particle = document.createElement('div');
+            particle.className = 'veil-particle';
+            
+            // Random size between 20-60px
+            const size = Math.random() * 40 + 20;
+            particle.style.width = size + 'px';
+            particle.style.height = size + 'px';
+            
+            // Random position
+            particle.style.left = Math.random() * 100 + '%';
+            particle.style.top = Math.random() * 100 + '%';
+            
+            // Random animation duration
+            particle.style.animationDuration = (Math.random() * 2 + 2) + 's';
+            
+            spellEffect.appendChild(particle);
+            
+            // Remove particle after animation
+            setTimeout(() => {
+                particle.remove();
+            }, 4000);
+        }
+    </script>
+</body>
+</html>
+

@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Echoes of Annihilation - The Spellcaster's Handbook</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .spell-casting {
+            text-align: center;
+            margin: 40px 0;
+        }
+
+        .cast-button {
+            font-family: 'Canterbury', Georgia, serif;
+            background: linear-gradient(to bottom, #a58c6e, #8b6f47);
+            color: #f4e8d0;
+            border: 3px solid #6b5435;
+            padding: 15px 40px;
+            font-size: 1.3em;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+
+        .cast-button:hover {
+            background: linear-gradient(to bottom, #b89c7e, #9b7f57);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.4);
+        }
+
+        .cast-button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .listening {
+            color: #8b4513;
+            font-size: 1.2em;
+            margin: 20px 0;
+            font-style: italic;
+            min-height: 30px;
+        }
+
+        .spell-effect {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1000;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+        }
+
+        .spell-effect.active {
+            opacity: 1;
+        }
+
+        .annihilation-particle {
+            position: absolute;
+            background: radial-gradient(circle, rgba(255, 215, 0, 0.8), rgba(255, 140, 0, 0.6), transparent);
+            border-radius: 50%;
+            pointer-events: none;
+            animation: annihilation 4s ease-out forwards;
+        }
+
+        @keyframes annihilation {
+            0% {
+                opacity: 1;
+                transform: scale(0) translateY(0) rotate(0deg);
+            }
+            25% {
+                opacity: 0.9;
+                transform: scale(1.5) translateY(-20px) rotate(90deg);
+            }
+            50% {
+                opacity: 0.7;
+                transform: scale(2.5) translateY(-50px) rotate(180deg);
+            }
+            75% {
+                opacity: 0.4;
+                transform: scale(3.5) translateY(-80px) rotate(270deg);
+            }
+            100% {
+                opacity: 0;
+                transform: scale(5) translateY(-120px) rotate(360deg);
+            }
+        }
+
+        .annihilation-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at center, 
+                transparent 0%, 
+                rgba(255, 69, 0, 0.2) 20%, 
+                rgba(255, 140, 0, 0.3) 40%, 
+                rgba(255, 215, 0, 0.4) 60%, 
+                rgba(255, 69, 0, 0.3) 80%, 
+                transparent 100%);
+            animation: annihilationPulse 3s ease-in-out;
+        }
+
+        @keyframes annihilationPulse {
+            0%, 100% {
+                opacity: 0;
+            }
+            25% {
+                opacity: 0.6;
+            }
+            50% {
+                opacity: 1;
+            }
+            75% {
+                opacity: 0.8;
+            }
+        }
+
+        .spell-result {
+            font-size: 1.3em;
+            color: #cc6600;
+            margin: 20px 0;
+            min-height: 40px;
+            font-weight: bold;
+        }
+
+        .instructions {
+            background: rgba(139,111,71,0.1);
+            padding: 20px;
+            margin: 30px 0;
+            border: 1px solid #a58c6e;
+            border-radius: 5px;
+        }
+
+        .instructions h3 {
+            margin-top: 0;
+            color: #3a1f0f;
+        }
+
+        .instructions ul {
+            text-align: left;
+            margin: 15px auto;
+            max-width: 500px;
+        }
+
+    </style>
+</head>
+<body>
+    <main class="page-container">
+        <h1>Echoes of Annihilation</h1>
+        
+        <p>An ancient incantation that summons the echoes of past apocalyptic events into the present, unleashing waves of golden destruction that ripple through reality itself.</p>
+        
+        <div class="instructions">
+            <h3>To Cast This Spell:</h3>
+            <ul>
+                <li>Click the "Begin Incantation" button below</li>
+                <li>Speak clearly: <strong>"Echoes of Annihilation"</strong></li>
+                <li>The spell will activate when the words are recognized</li>
+                <li>You may need to grant microphone permissions</li>
+            </ul>
+        </div>
+
+        <div class="spell-casting">
+            <button id="castButton" class="cast-button">Begin Incantation</button>
+            <div id="listeningStatus" class="listening"></div>
+            <div id="spellResult" class="spell-result"></div>
+        </div>
+
+        <div class="flourish">❦ ❦ ❦</div>
+        
+        <div class="bottom-right-link">
+            <a href="incantations.html">← Back to Incantations</a>
+        </div>
+    </main>
+
+    <div id="spellEffect" class="spell-effect"></div>
+
+    <script>
+        const castButton = document.getElementById('castButton');
+        const listeningStatus = document.getElementById('listeningStatus');
+        const spellResult = document.getElementById('spellResult');
+        const spellEffect = document.getElementById('spellEffect');
+
+        let recognition = null;
+        let isListening = false;
+
+        // Check if browser supports speech recognition
+        if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            recognition = new SpeechRecognition();
+            recognition.continuous = false;
+            recognition.interimResults = true;
+            recognition.lang = 'en-US';
+
+            recognition.onstart = () => {
+                isListening = true;
+                castButton.disabled = true;
+                castButton.textContent = 'Listening...';
+                listeningStatus.textContent = 'Speak the incantation...';
+                spellResult.textContent = '';
+            };
+
+            recognition.onresult = (event) => {
+                const transcript = Array.from(event.results)
+                    .map(result => result[0].transcript)
+                    .join('')
+                    .toLowerCase()
+                    .trim();
+
+                listeningStatus.textContent = `Heard: "${transcript}"`;
+
+                // Check if the spell was cast correctly
+                if (transcript.includes('echoes of annihilation') || 
+                    transcript.includes('echoes of annihilation') ||
+                    transcript.includes('echo of annihilation')) {
+                    castSpell();
+                }
+            };
+
+            recognition.onerror = (event) => {
+                console.error('Speech recognition error:', event.error);
+                if (event.error === 'no-speech') {
+                    listeningStatus.textContent = 'No speech detected. Try again.';
+                } else if (event.error === 'not-allowed') {
+                    listeningStatus.textContent = 'Microphone access denied. Please grant permissions.';
+                } else {
+                    listeningStatus.textContent = 'Error occurred. Please try again.';
+                }
+                resetButton();
+            };
+
+            recognition.onend = () => {
+                if (isListening) {
+                    resetButton();
+                }
+            };
+
+            castButton.addEventListener('click', () => {
+                if (!isListening) {
+                    recognition.start();
+                }
+            });
+        } else {
+            castButton.disabled = true;
+            castButton.textContent = 'Speech Recognition Not Supported';
+            listeningStatus.textContent = 'Your browser does not support speech recognition. Try Chrome or Edge.';
+        }
+
+        function resetButton() {
+            isListening = false;
+            castButton.disabled = false;
+            castButton.textContent = 'Begin Incantation';
+            setTimeout(() => {
+                listeningStatus.textContent = '';
+            }, 3000);
+        }
+
+        function castSpell() {
+            isListening = false;
+            spellResult.textContent = 'The echoes of destruction awaken...';
+            listeningStatus.textContent = '';
+            
+            // Create visual effect
+            spellEffect.classList.add('active');
+            
+            // Create annihilation overlay
+            const annihilationOverlay = document.createElement('div');
+            annihilationOverlay.className = 'annihilation-overlay';
+            spellEffect.appendChild(annihilationOverlay);
+            
+            // Create particle effects
+            for (let i = 0; i < 60; i++) {
+                setTimeout(() => {
+                    createParticle();
+                }, i * 40);
+            }
+            
+            // Clean up after animation
+            setTimeout(() => {
+                spellEffect.classList.remove('active');
+                setTimeout(() => {
+                    spellEffect.innerHTML = '';
+                }, 500);
+            }, 4000);
+            
+            resetButton();
+        }
+
+        function createParticle() {
+            const particle = document.createElement('div');
+            particle.className = 'annihilation-particle';
+            
+            // Random size between 25-70px
+            const size = Math.random() * 45 + 25;
+            particle.style.width = size + 'px';
+            particle.style.height = size + 'px';
+            
+            // Random position
+            particle.style.left = Math.random() * 100 + '%';
+            particle.style.top = Math.random() * 100 + '%';
+            
+            // Random animation duration
+            particle.style.animationDuration = (Math.random() * 2 + 3) + 's';
+            
+            spellEffect.appendChild(particle);
+            
+            // Remove particle after animation
+            setTimeout(() => {
+                particle.remove();
+            }, 5000);
+        }
+    </script>
+</body>
+</html>
